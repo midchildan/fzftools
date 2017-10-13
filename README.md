@@ -1,6 +1,7 @@
 # fzftools
 
-fzftools is an organized collection of FZF scripts with a consistent interface.
+fzftools is an organized collection of [FZF](https://github.com/junegunn/fzf)
+scripts with a consistent interface.
 
 ## Installation
 
@@ -93,7 +94,7 @@ available selectors are:
 ### fzf-run
 
 ```
-Usage fzf-run command [subcommands...] selector [flags...]
+Usage: fzf-run command [subcommands...] selector [flags...]
 ```
 
 Runs `command` with the output of `fzf-sel selector` as its arguments.
