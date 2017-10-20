@@ -108,26 +108,32 @@ fzf::_fzf_or_abort() {
 ############################
 
 fzf::sel::dir() {
-  find -L "${1:-.}" -path '*/\.*' -prune -o -type d -print 2> /dev/null \
-    | fzf::_fzf_or_abort -m --preview "ls -l {}"
+  find -L "${1:-.}" -mindepth 1 -path '*/\.*' -prune -o -type d -print \
+    2> /dev/null \
+    | fzf::_fzf_or_abort -m --preview "ls -l {}" --bind=ctrl-g:toggle-preview \
+        --header 'Press CTRL-G to toggle preview'
 }
 
 fzf::sel::dirstack() {
-  dirs -l -p | fzf::_fzf_or_abort -m --preview "ls -l {}"
+  dirs -l -p \
+    | fzf::_fzf_or_abort -m --preview "ls -l {}" --bind=ctrl-g:toggle-preview \
+        --header 'Press CTRL-G to toggle preview'
 }
 
 fzf::sel::file() {
-  find -L "$1" \
+  find -L "${1:-.}" -mindepth 1 \
     -name .git -prune -o -name .svn -prune -o \( -type d -o -type f -o -type l \) \
     -a -not -path "$1" -print 2> /dev/null \
     | sed 's#^\./##' \
-    | fzf::_fzf_or_abort -m --preview "head -$LINES {}"
+    | fzf::_fzf_or_abort -m --preview "head -$LINES {}" \
+        --bind=ctrl-g:toggle-preview --header 'Press CTRL-G to toggle preview'
 }
 
 fzf::sel::fc() {
   fc -l 1 \
     | fzf::_fzf_or_abort +s --tac -n2..,.. --tiebreak=index \
         --bind=ctrl-s:toggle-sort --header 'Press CTRL-S to toggle sort' \
+        --preview 'echo {}' --preview-window down:3:wrap \
     | cut -f1
 }
 
@@ -332,6 +338,7 @@ fzf::sel::git::branch() {
     | sort \
     | fzf::_fzf_or_abort -m --ansi --tac \
         --preview-window right:70% --preview "$preview" \
+        --bind=ctrl-g:toggle-preview --header 'Press CTRL-G to toggle preview' \
     | sed 's/^..//' \
     | cut -d' ' -f1 \
     | sed 's#^remotes/##'
@@ -348,7 +355,8 @@ fzf::sel::git::commit() {
   git log --graph --color=always --date=short \
           --format="%C(green)%C(bold)%cd %C(auto)%h%d %s (%an)" \
     | fzf::_fzf_or_abort -m +s --ansi --reverse --preview "$preview" \
-        --bind 'ctrl-s:toggle-sort' --header 'Press CTRL-S to toggle sort' \
+        --bind 'ctrl-s:toggle-sort,ctrl-g:toggle-preview' \
+        --header 'Press CTRL-S to toggle sort, CTRL-G to toggle preview' \
     | grep -o "[a-f0-9]\{7,\}"
 }
 
@@ -360,7 +368,8 @@ fzf::sel::git::file() {
     || find . -path '*/\.*' -prune -o -type f -print -o -type l -print \
     | sed 's/\..//' \
   ) | fzf::_fzf_or_abort -m \
-        --preview "if [[ -d {} ]]; then ls -l {}; else head -$LINES {}; fi"
+        --preview "if [[ -d {} ]]; then ls -l {}; else head -$LINES {}; fi" \
+        --bind=ctrl-g:toggle-preview --header 'Press CTRL-G to toggle preview'
 }
 
 # https://gist.github.com/junegunn/8b572b8d4b5eddd8b85e5f4d40f17236
@@ -387,7 +396,8 @@ fzf::sel::git::stash() {
 
   git stash list --pretty="%C(green)%C(bold)%cd %C(auto)%h%d %s (%an)" \
     | fzf::_fzf_or_abort -m +s --ansi --reverse --preview="$preview" \
-        --bind 'ctrl-s:toggle-sort' --header 'Press CTRL-S to toggle sort' \
+        --bind 'ctrl-s:toggle-sort,ctrl-g:toggle-preview' \
+        --header 'Press CTRL-S to toggle sort, CTRL-G to toggle preview' \
     | grep -o "[a-f0-9]\{7,\}"
 }
 
@@ -400,6 +410,7 @@ fzf::sel::git::status() {
 
   git -c color.status=always status --short \
     | fzf::_fzf_or_abort -m --ansi --nth 2..,.. --preview="$preview" \
+        --bind=ctrl-g:toggle-preview --header 'Press CTRL-G to toggle preview' \
     | cut -c4- \
     | sed 's/.* -> //'
 }
