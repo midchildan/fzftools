@@ -78,7 +78,7 @@ fzftools provides two commands: fzf-sel and fzf-run.
 Usage: fzf-sel selector
 ```
 
-Filters list of items associated with `selector` using FZF. The list of
+Filters list of items associated with `selector` using FZF. Examples of
 available selectors are:
 
 - dir
@@ -89,6 +89,8 @@ available selectors are:
 - brew formula
 - brew installed
 - brew leaves
+- brew cask cask
+- brew cask installed
 - git branch
 - git commit
 - git file
