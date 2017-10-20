@@ -47,6 +47,10 @@ fzf-run() {
   fi
 }
 
+fzf-loop() {
+  while true; do fzf-run "$@"; done
+}
+
 #######################
 #  utility functions  #
 #######################

@@ -62,6 +62,12 @@ $ fzf-run vim "git file" --remote-tab-silent
 $ fzf-run git rebase commit -i
 ```
 
+### Browse git commits
+
+```console
+$ fzf-loop git show commit
+```
+
 ## Usage
 
 fzftools provides two commands: fzf-sel and fzf-run.
@@ -98,6 +104,14 @@ Usage: fzf-run command [subcommands...] selector [flags...]
 ```
 
 Runs `command` with the output of `fzf-sel selector` as its arguments.
+
+### fzf-loop
+
+```
+Usage: fzf-loop command [subcommands...] selector [flags...]
+```
+
+Reapetedly run `fzf-run` until selection is canceled.
 
 ## Customization
 
