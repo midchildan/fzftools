@@ -183,34 +183,51 @@ fzf::run::_common() {
 
 fzf::sel::brew() {
   (( $# < 1 )) && fzf::_abort "Insufficient number of arguments."
+  fzf::_is_command "brew" || fzf::_abort "Homebrew not installed."
 
-  local selected
-  if ! fzf::_is_function "fzf::sel::brew::$1" ; then
-    fzf::_abort "Invalid selector $1"
+  local cmd="$1"
+  shift
+
+  if ! fzf::_is_function "fzf::sel::brew::$cmd" ; then
+    fzf::_abort "Invalid selector $cmd"
   fi
 
-  "fzf::sel::brew::$1"
+  "fzf::sel::brew::$cmd" "$@"
 }
 
 fzf::sel::brew::formula() {
-  fzf::_is_command "brew" || fzf::_abort "Not a git repository."
-
   brew search \
     | fzf::_fzf_or_abort -m --preview-window right:70% --preview 'brew info {}'
 }
 
 fzf::sel::brew::installed() {
-  fzf::_is_command "brew" || fzf::_abort "Not a git repository."
-
   brew ls \
     | fzf::_fzf_or_abort -m --preview-window right:70% --preview 'brew info {}'
 }
 
 fzf::sel::brew::leaves() {
-  fzf::_is_command "brew" || fzf::_abort "Not a git repository."
-
   brew leaves \
     | fzf::_fzf_or_abort -m --preview-window right:70% --preview 'brew info {}'
+}
+
+fzf::sel::brew::cask() {
+  (( $# < 1 )) && fzf::_abort "Insufficient number of arguments."
+
+  if ! fzf::_is_function "fzf::sel::brew::cask::$1" ; then
+    fzf::_abort "Invalid selector $1"
+  fi
+
+  "fzf::sel::brew::cask::$1"
+}
+
+fzf::sel::brew::cask::cask() {
+  brew cask search \
+    | fzf::_fzf_or_abort -m --preview-window right:70% --preview 'brew cask info {}'
+}
+
+fzf::sel::brew::cask::installed() {
+  brew cask ls \
+    | fzf::_fzf_or_abort -m --preview-window right:70% --preview 'brew cask info {}'
 }
 
 #######################
@@ -229,22 +246,58 @@ fzf::run::brew() {
   fi
 }
 
+fzf::run::brew::cask() {
+  (( $# < 1 )) && fzf::_abort "Insufficient number of arguments."
+  local cmd="$1"
+  shift
+
+  if fzf::_is_function "fzf::run::brew::cask::$cmd" ; then
+    "fzf::run::brew::cask::$cmd" "$@"
+  else
+    fzf::run::brew::cask::_common "$cmd" "$@"
+  fi
+}
+
 # Runs a brew command on an item selected using FZF
 # Arguments:
 #   cmd : brew command to execute
-#   item_type : type of item [formula/ls/leaves]
+#   item_type : type of item [formula/installed/leaves]
 #   flags : additional flags to pass to brew [optional]
 # Returns:
 #   None
 fzf::run::brew::_common() {
   (( $# < 2 )) && fzf::_abort "Insufficient number of arguments."
 
+  local IFS=$'\n'
+
   local cmd="$1"
   local item_type="$2"
   shift 2
 
-  local selected="$(fzf::sel::brew "$item_type")"
-  brew "$cmd" "$@" "$selected"
+  local selected
+  selected=($(fzf::sel::brew "$item_type"))
+  brew "$cmd" "$@" "$selected[@]"
+}
+
+# Runs a cask command on an item selected using FZF
+# Arguments:
+#   cmd : cask command to execute
+#   item_type : type of item [cask/installed]
+#   flags : additional flags to pass to cask [optional]
+# Returns:
+#   None
+fzf::run::brew::cask::_common() {
+  (( $# < 2 )) && fzf::_abort "Insufficient number of arguments."
+
+  local IFS=$'\n'
+
+  local cmd="$1"
+  local item_type="$2"
+  shift 2
+
+  local selected
+  selected=($(fzf::sel::brew::cask "$item_type"))
+  brew cask "$cmd" "$@" "$selected[@]"
 }
 
 #########################
@@ -254,7 +307,6 @@ fzf::run::brew::_common() {
 fzf::sel::git() {
   (( $# < 1 )) && fzf::_abort "Insufficient number of arguments."
 
-  local selected
   if ! fzf::_is_function "fzf::sel::git::$1" ; then
     fzf::_abort "Invalid selector $1"
   fi
@@ -383,10 +435,13 @@ fzf::run::git() {
 fzf::run::git::_common() {
   (( $# < 2 )) && fzf::_abort "Insufficient number of arguments."
 
+  local IFS=$'\n'
+
   local cmd="$1"
   local item_type="$2"
   shift 2
 
-  local selected="$(fzf::sel::git "$item_type")"
-  git "$cmd" "$@" "$selected"
+  local selected
+  selected=($(fzf::sel::git "$item_type"))
+  git "$cmd" "$@" "$selected[@]"
 }
