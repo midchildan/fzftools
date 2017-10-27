@@ -78,6 +78,7 @@ fzf-gen() {
   esac
 
   [[ "$permission" != "default" ]] && chmod "$permission" "$dst"
+  true
 }
 
 #######################
