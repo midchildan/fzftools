@@ -62,13 +62,13 @@ fzf-gen() {
   local index="$(fzf::sel::template)"
   entry=($(sed "${index}q;d" "$index_path"))
 
-  local dst="$entry[0]"
-  local src="$template_dir/$entry[1]"
-  local type="$entry[3]"
-  local permission="$entry[4]"
+  local dst="$entry[1]"
+  local src="$template_dir/$entry[2]"
+  local type="$entry[4]"
+  local permission="$entry[5]"
 
   local editor="vim"
-  [[ "$EDITOR" =~ *vim ]] && editor="$EDITOR"
+  [[ "$EDITOR" == *vim ]] && editor="$EDITOR"
 
   case "$type" in
     plain) cp "$src" "$dst" ;;
