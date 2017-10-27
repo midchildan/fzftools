@@ -51,6 +51,35 @@ fzf-loop() {
   while true; do fzf-run "$@"; done
 }
 
+fzf-gen() {
+  local IFS=','
+
+  local conf_dir="${FZF_CONF_DIR:-$HOME/.config/shell}"
+  local index_path="$conf_dir/templates.csv"
+  local template_dir="$conf_dir/templates"
+
+  local entry
+  local index="$(fzf::sel::template)"
+  entry=($(sed "${index}q;d" "$index_path"))
+
+  local dst="$entry[0]"
+  local src="$template_dir/$entry[1]"
+  local type="$entry[3]"
+  local permission="$entry[4]"
+
+  local editor="vim"
+  [[ "$EDITOR" =~ *vim ]] && editor="$EDITOR"
+
+  case "$type" in
+    plain) cp "$src" "$dst" ;;
+    script) "$src" > "$dst" ;;
+    snippet) "$editor" "$dst" "+call UltiSnips#Anon(join(readfile(\"$src\"), \"\\n\"))" ;;
+    *) fzf::_abort "Invalid template type" ;;
+  esac
+
+  [[ "$permission" != "default" ]] && chmod "$permission" "$dst"
+}
+
 #######################
 #  utility functions  #
 #######################
@@ -142,6 +171,18 @@ fzf::sel::process() {
     | sed 1d \
     | fzf::_fzf_or_abort -m --preview 'echo {}' --preview-window down:3:wrap \
     | awk '{print $2}'
+}
+
+fzf::sel::template() {
+  local conf_dir="${FZF_CONF_DIR:-$HOME/.config/shell}"
+  local index_path="$conf_dir/templates.csv"
+  local template_dir="$conf_dir/templates"
+
+  cat "$index_path" \
+    | awk -F, \
+      "{ printf \"%d $(tput setaf 2)%s$(tput sgr0) (%s)\\t%s\\n\", NR, \$1, \$2, \$3 }" \
+    | fzf::_fzf_or_abort +m --ansi --with-nth=2.. \
+    | cut -d' ' -f1
 }
 
 #########################
