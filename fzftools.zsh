@@ -461,7 +461,7 @@ fzf::sel::git::status() {
 fzf::sel::git::tag() {
   fzf::_is_git_repo || fzf::_abort "Not a git repository."
 
-  git tag --sort --version:refname \
+  git tag --sort -version:refname \
     | fzf::_fzf_or_abort -m --preview-window right:70% \
         --preview 'git show --color=always {} | head -'$LINES
 }
